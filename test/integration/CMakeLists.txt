@@ -1,0 +1,3 @@
+find_package(Catch2 REQUIRED)
+add_executable(integration_tests integration_tests_runner.cpp nested_object_test.cpp)
+target_link_libraries(integration_tests PRIVATE Catch2::Catch2 ycfp)

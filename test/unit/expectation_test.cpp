@@ -42,7 +42,7 @@ TEST_CASE("Object expectation parses all expected values and returns correct res
     YAML::Node node;
     node["name"] = "Jack";
     node["age"] = (unsigned int) 33;
-    Node<> expectation(
+    Object expectation(
             Node<string>{"name", ex::Required},
             Node<unsigned int>{"age", ex::Required}
     );
@@ -56,9 +56,9 @@ TEST_CASE("Nested object expectations parse values can be retrieved", "[expectat
     YAML::Node node;
     node["data"]["name"] = "Jack";
     node["data"]["age"] = (unsigned int) 33;
-    Node<> expectation(
+    Object expectation(
             "root",
-            Node<>{
+            Object{
                     "data",
                     Node<string>{"name", ex::Required},
                     Node<unsigned int>{"age", ex::Required}
@@ -71,16 +71,16 @@ TEST_CASE("Nested object expectations parse values can be retrieved", "[expectat
 
 TEST_CASE("Accessing invalid nested object throws", "[expectation]") {
     YAML::Node node;
-    auto result = parseExpected(node, Node<>{"node"});
+    auto result = parseExpected(node, Object{"node"});
     REQUIRE_THROWS_AS(result.get<string>({"person", "data", "name"}), AccessError);
 }
 
 TEST_CASE("Accessing valid but not parsed expectation logs and throws", "[expectation]") {
     YAML::Node node;
     std::vector<ValidationError> log{0};
-    Node<> expectation{
+    Object expectation{
             "root",
-            Node<>{
+            Object{
                     "data",
                     Node<string>{"name", ex::Required}
             }
@@ -93,9 +93,11 @@ TEST_CASE("Accessing valid but not parsed expectation logs and throws", "[expect
 
 TEST_CASE("Parsing expectation structure that has root as child is an error") {
     YAML::Node node;
-    REQUIRE_THROWS_AS(parseExpected(node, Node<>{
+    REQUIRE_THROWS_AS(parseExpected(node, Object{
             "root",
-            Node<>{Node<std::string>{"name", ex::Required}}
+            Object{Node<std::string>{"name", ex::Required}}
     }), ParsingError);
 }
+
+
 
