@@ -25,6 +25,7 @@ namespace ycfp {
     template<typename T>
     class Node {
     public:
+        explicit Node(Existence existence): existence(existence) {}
         Node(std::string_view key, Existence existence) : key(key), existence(existence) {}
 
         std::optional<T> parse(const YAML::Node &node) const {
@@ -41,8 +42,7 @@ namespace ycfp {
             return errors;
         }
 
-        std::string key;
-        static constexpr bool isMap = false;
+        std::string key{};
     private:
         Existence existence;
     };
@@ -76,11 +76,30 @@ namespace ycfp {
         std::string message;
     };
 
+    template<typename Exp>
+    class Sequence {
+    public:
+        explicit Sequence(const Exp& expectation): expectation(expectation) {}
+        [[nodiscard]] std::optional<std::vector<std::any>> parse(const YAML::Node &node) const {
+            if (!node) return {};
+            std::vector<std::any> result;
+            for (auto&& subNode : node){
+                result.emplace_back(expectation.parse(subNode));
+            }
+            return result;
+        }
+
+        [[nodiscard]] std::vector<ValidationError> validate(const std::any &value) const {
+
+        }
+    private:
+        Exp expectation;
+    };
+
     template<typename... Ts>
     class Object {
     public:
         explicit Object(std::string_view key, const Ts &&... expectations) : key(key), expectations(expectations...) {}
-
         explicit Object(const Ts &&... expectations) : expectations(expectations...) {}
 
         [[nodiscard]] std::optional<std::map<std::string, std::any>> parse(const YAML::Node &node) const {
@@ -114,7 +133,6 @@ namespace ycfp {
             return errors;
         }
 
-        static constexpr bool isMap = true;
         std::string key;
     private:
         std::tuple<Ts...> expectations;

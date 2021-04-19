@@ -91,12 +91,21 @@ TEST_CASE("Accessing valid but not parsed expectation logs and throws", "[expect
     REQUIRE_THROWS_AS(result.get<string>({"data", "name"}), AccessError);
 }
 
-TEST_CASE("Parsing expectation structure that has root as child is an error") {
+TEST_CASE("Parsing expectation structure that has root as child is an error", "[expectation]") {
     YAML::Node node;
     REQUIRE_THROWS_AS(parseExpected(node, Object{
             "root",
             Object{Node<std::string>{"name", ex::Required}}
     }), ParsingError);
+}
+
+TEST_CASE("Sequence can be parsed", "[expectation]") {
+    YAML::Node node;
+    node.push_back("Hello");
+    node.push_back("world");
+    Sequence seq{Node<string>(ex::Required)};
+    auto result = seq.parse(node);
+    return;
 }
 
 
