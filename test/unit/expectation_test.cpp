@@ -8,14 +8,14 @@ using ex = ycfp::Existence;
 TEST_CASE("A value expectation can be parsed to the value", "[expectation]") {
     YAML::Node node;
     node["name"] = "Jack";
-    Node<string> expectation("name", ex::Required);
+    Node<string> expectation("name");
     auto result = parseExpected(node["name"], expectation);
     REQUIRE(result.get<string>({"name"}) == "Jack");
 }
 
 TEST_CASE("Required value not parsed or parsed as null is an error", "[expectation]") {
     YAML::Node node;
-    Node<string> expectation("name", ex::Required);
+    Node<string> expectation("name");
     vector<ValidationError> log{0};
     auto result = parseExpected(node["name"], expectation, &log);
     REQUIRE(log.size() == 1);
@@ -24,7 +24,7 @@ TEST_CASE("Required value not parsed or parsed as null is an error", "[expectati
 
 TEST_CASE("Accessing expected value that was not successfully parsed is an error", "[expectation]") {
     YAML::Node node;
-    Node<string> expectation("name", ex::Required);
+    Node<string> expectation("name");
     auto result = parseExpected(node["name"], expectation);
     REQUIRE_THROWS_AS(result.get<string>({"name"}), AccessError);
 }
@@ -33,7 +33,7 @@ TEST_CASE("Accessing expected value that was not successfully parsed is an error
 TEST_CASE("Accessing expected value with wrong key is an error", "[expectation]") {
     YAML::Node node;
     node["name"] = "Jack";
-    Node<string> expectation("name", ex::Required);
+    Node<string> expectation("name");
     auto result = parseExpected(node["name"], expectation);
     REQUIRE_THROWS_AS(result.get<string>({"not_name"}), AccessError);
 }
@@ -43,8 +43,8 @@ TEST_CASE("Object expectation parses all expected values and returns correct res
     node["name"] = "Jack";
     node["age"] = (unsigned int) 33;
     Object expectation(
-            Node<string>{"name", ex::Required},
-            Node<unsigned int>{"age", ex::Required}
+            Node<string>{"name"},
+            Node<unsigned int>{"age"}
     );
     auto result = parseExpected(node, expectation);
     CHECK(result.get<string>({"name"}) == "Jack");
@@ -60,8 +60,8 @@ TEST_CASE("Nested object expectations parse values can be retrieved", "[expectat
             "root",
             Object{
                     "data",
-                    Node<string>{"name", ex::Required},
-                    Node<unsigned int>{"age", ex::Required}
+                    Node<string>{"name"},
+                    Node<unsigned int>{"age"}
             }
     );
     auto result = parseExpected(node, expectation);
@@ -82,7 +82,7 @@ TEST_CASE("Accessing valid but not parsed expectation logs and throws", "[expect
             "root",
             Object{
                     "data",
-                    Node<string>{"name", ex::Required}
+                    Node<string>{"name"}
             }
     };
     auto result = parseExpected(node, expectation, &log);
@@ -95,7 +95,7 @@ TEST_CASE("Parsing expectation structure that has root as child is an error", "[
     YAML::Node node;
     REQUIRE_THROWS_AS(parseExpected(node, Object{
             "root",
-            Object{Node<std::string>{"name", ex::Required}}
+            Object{Node<std::string>{"name"}}
     }), ParsingError);
 }
 
@@ -103,7 +103,7 @@ TEST_CASE("Sequence can be parsed", "[expectation]") {
     YAML::Node node;
     node.push_back("Hello");
     node.push_back("world");
-    Sequence seq{Node<string>(ex::Required)};
+    Sequence seq{Node<string>()};
     auto result = seq.parse(node);
     return;
 }
