@@ -104,9 +104,20 @@ TEST_CASE("Sequence can be parsed", "[expectation]") {
     node.push_back("Hello");
     node.push_back("world");
     Sequence seq{Node<string>()};
-    auto result = seq.parse(node);
-    return;
+    auto result = seq.parse(node).value();
+    REQUIRE(any_cast<optional<string>>(result[0]) == "Hello");
+    REQUIRE(any_cast<optional<string>>(result[1]) == "world");
 }
+
+TEST_CASE("Sequence can be validated", "[expectation]") {
+    YAML::Node node;
+    Sequence seq{Node<string>()};
+    auto result = seq.parse(node);
+    auto errors = seq.validate(result);
+    REQUIRE(errors.size() == 1);
+}
+
+
 
 
 

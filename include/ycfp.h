@@ -81,10 +81,11 @@ namespace ycfp {
     template<typename Exp>
     class Sequence {
     public:
-        explicit Sequence(const Exp &expectation) : expectation(expectation) {}
+        explicit Sequence(const Exp &expectation) : key(key), expectation(expectation) {}
+        explicit Sequence(std::string_view key, const Exp &expectation) : key(key), expectation(expectation) {}
 
         [[nodiscard]] std::optional<std::vector<std::any>> parse(const YAML::Node &node) const {
-            if (!node) return {};
+            if (!node || !node.IsSequence()) return {};
             std::vector<std::any> result;
             for (auto &&subNode : node) {
                 result.emplace_back(expectation.parse(subNode));
@@ -93,9 +94,19 @@ namespace ycfp {
         }
 
         [[nodiscard]] std::vector<ValidationError> validate(const std::any &value) const {
-
+            std::vector<ValidationError> errors;
+            auto extractedValue = std::any_cast<std::optional<std::vector<std::any>>>(value);
+            if (!extractedValue) {
+                errors.emplace_back(ValidationError{key + " is required!"});
+                return errors;
+            }
+            for (auto&& ele : extractedValue.value()){
+                auto result = expectation.validate(ele);
+                errors.insert(std::begin(errors), std::begin(result), std::end(result));
+            }
+            return errors;
         }
-
+        std::string key{};
     private:
         Exp expectation;
     };
